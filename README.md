@@ -1,115 +1,445 @@
-# web-programming-2026-template
+# Рецептник
 
-A reusable Django project with no bundled application, SQLite, and Django's
-standard admin, authentication, sessions, messages, and staticfiles support.
+Сайт з рецептами, де можна швидко знайти, що приготувати.
 
-## Local setup
+## Про проєкт
 
-Requires the latest patch release of Python 3.12, 3.13, or 3.14. Run these commands from the project directory containing
-`manage.py`.
+Тут зібрані рецепти з різних кухонь світу. Рецепт можна знайти за назвою або за продуктом, який є вдома. Список можна відфільтрувати за кухнею, типом страви, складністю і часом приготування, а ще відсортувати за оцінкою, популярністю чи швидкістю.
 
-1. Create and activate a virtual environment:
+На сторінці рецепта є фото, опис, інгредієнти з кількістю, кроки приготування, час, кількість порцій і відгуки.
 
-   ```bash
-   python -m venv .venv
-   
-   # for linux/macos
-   source .venv/bin/activate
-   # for Windows:
-   .venv\Scripts\activate
-   ```
+Що ще є на сайті:
 
-2. Install dependencies:
+- сторінки кухонь, де видно всі рецепти цієї кухні
+- сторінки авторів з короткою інформацією про автора і всіма його рецептами
+- реєстрація і вхід
+- профіль, де можна змінити дані про себе і подивитись свої улюблені рецепти та відгуки
+- улюблені, куди можна зберегти рецепт, щоб потім не шукати
+- відгуки з оцінкою від 1 до 5
+- сторінка «Про нас» з контактами
 
-   ```bash
-   python -m pip install -r requirements-dev.txt
-   ```
+Рецепти, кухні й авторів можна додавати, редагувати і видаляти.
 
+## Зміст
 
-3. Apply migrations to create the local SQLite database:
+- [Загальні правила](#загальні-правила)
+- [Рецепти](#рецепти)
+- [Кухні](#кухні)
+- [Автори](#автори)
+- [Відгуки](#відгуки)
+- [Користувачі](#користувачі)
+- [Схема бази даних](#схема-бази-даних)
 
-   ```bash
-   python manage.py migrate
-   ```
+## Загальні правила
 
-4. Start the development server:
+- Усі адреси починаються з `/api/`.
+- Дані передаються і повертаються у форматі JSON.
+- Сторінка «Про нас» статична, тому окремого ендпоінта для неї немає.
 
-   ```bash
-   python manage.py runserver
-   ```
+Які статус-коди повертає сервер:
 
-## Endpoints
+| Код | Значення |
+|---|---|
+| `200 OK` | все добре, у відповіді є дані |
+| `201 Created` | щось нове створено |
+| `204 No Content` | все добре, але у відповіді нічого немає (після видалення) |
+| `400 Bad Request` | у запиті щось не так, наприклад не заповнене обов'язкове поле |
+| `401 Unauthorized` | користувач не увійшов |
+| `403 Forbidden` | у користувача немає прав на цю дію |
+| `404 Not Found` | з таким id нічого немає |
 
-With the server running at `http://127.0.0.1:8000`:
+> **TODO:** як саме робити авторизацію (токен чи сесія). Розберусь, коли пройдемо цю тему.
 
-| URL | Behavior |
-| --- | --- |
-| http://127.0.0.1:8000/ | No application homepage; may show Django's development welcome page while `DEBUG = True` |
-| http://127.0.0.1:8000/admin/ | Django admin, available after applying migrations |
+> **TBD:** хто може додавати, редагувати і видаляти рецепти, кухні й авторів. Будь-хто чи тільки адмін?
 
-With `DEBUG = False`, unmatched URLs such as `/` return HTTP 404.
+## Рецепти
 
-To create an account for admin login, run this after applying migrations:
+### Отримати список рецептів
 
-```bash
-python manage.py createsuperuser
+Використовується на головній сторінці.
+
+`GET /api/recipes`
+
+Параметри запиту (усі необов'язкові):
+
+| Параметр | Опис | Приклад |
+|---|---|---|
+| `search` | пошук за назвою | `search=борщ` |
+| `ingredient` | пошук за інгредієнтом | `ingredient=гарбуз` |
+| `cuisine` | id кухні | `cuisine=1` |
+| `meal_type` | тип страви: `breakfast`, `soup`, `main`, `salad`, `dessert`, `drink` | `meal_type=soup` |
+| `difficulty` | складність: `easy`, `medium`, `hard` | `difficulty=easy` |
+| `max_time` | максимальний час приготування в хвилинах | `max_time=30` |
+| `sort` | сортування: `rating` (спочатку з найвищою оцінкою), `popular` (спочатку найпопулярніші), `time` (спочатку найшвидші), `newest` (спочатку нові) | `sort=rating` |
+
+Приклад: `GET /api/recipes?search=борщ&cuisine=1&sort=rating`
+
+Відповідь: `200 OK`
+
+```json
+[
+  {
+    "id": 1,
+    "title": "Український борщ",
+    "image": "https://example.com/borshch.jpg",
+    "cuisine": { "id": 1, "name": "Українська" },
+    "meal_type": "soup",
+    "difficulty": "medium",
+    "cooking_time": 90,
+    "rating": 4.8
+  }
+]
 ```
 
-## Add your first application
+`rating` це середня оцінка з усіх відгуків. А популярність залежить від того, скільки людей додали рецепт в улюблені.
 
-1. Create an app from the directory containing `manage.py` (replace `myapp`
-   with your application name):
+### Отримати один рецепт
 
-   ```bash
-   python manage.py startapp myapp
-   ```
+Використовується на сторінці рецепта.
 
-2. Add its generated configuration class, `myapp.apps.MyappConfig`, to
-   `INSTALLED_APPS` in `config/settings.py`.
-3. Define your views and create `myapp/urls.py` with their URL patterns.
-4. Register that URLconf in `config/urls.py` using `path()` and `include()`,
-   choosing a URL prefix for the app and retaining the admin route.
+`GET /api/recipes/{id}`
 
-See the official Django 6.1 tutorial for
-[views and URL registration](https://docs.djangoproject.com/en/6.1/intro/tutorial01/)
-and [app registration and models](https://docs.djangoproject.com/en/6.1/intro/tutorial02/).
+Відповідь: `200 OK`
 
-## Git attributes
-
-Git detects text files automatically and normalizes them to LF. Checkouts use
-LF on Linux and Windows, while `.bat` and `.cmd` files use CRLF. Binary files
-are auto-detected and left unchanged, helping avoid newline-only diffs.
-
-
-## Code style and submission verification
-
-All submissions are required to adhere to PEP-8, Django best practices, and standard HTML/CSS/JS formatting. A deterministic cross-platform utility is provided to help you check and format your code.
-
-### 1. Verification (Check Mode)
-Before submitting, verify that all files adhere to the required standards:
-
-```bash
-python check_submission.py
+```json
+{
+  "id": 1,
+  "title": "Український борщ",
+  "description": "Класичний борщ на яловичому бульйоні",
+  "image": "https://example.com/borshch.jpg",
+  "cuisine": { "id": 1, "name": "Українська" },
+  "author": { "id": 3, "name": "Олена Коваль" },
+  "meal_type": "soup",
+  "difficulty": "medium",
+  "cooking_time": 90,
+  "servings": 6,
+  "ingredients": [
+    { "name": "Буряк", "amount": "2 шт" },
+    { "name": "Капуста", "amount": "300 г" }
+  ],
+  "steps": [
+    "Зварити бульйон",
+    "Натерти буряк і обсмажити з морквою"
+  ],
+  "rating": 4.8,
+  "created_at": "2026-10-12T10:00:00Z"
+}
 ```
 
-If all checks pass, you are ready to submit! If any checks fail, review the error output or run the auto-formatter below.
+Помилки: `404`, якщо рецепта не існує.
 
-### 2. Auto-Formatting
-To automatically format Python files, fix safe PEP-8 rules, format Django HTML templates, and format CSS/JS static files:
+### Додати рецепт
 
-```bash
-python check_submission.py --format
+`POST /api/recipes`
+
+Тіло запиту:
+
+```json
+{
+  "title": "Український борщ",
+  "description": "Класичний борщ на яловичому бульйоні",
+  "image": "https://example.com/borshch.jpg",
+  "cuisine_id": 1,
+  "author_id": 3,
+  "meal_type": "soup",
+  "difficulty": "medium",
+  "cooking_time": 90,
+  "servings": 6,
+  "ingredients": [
+    { "name": "Буряк", "amount": "2 шт" }
+  ],
+  "steps": ["Зварити бульйон"]
+}
 ```
 
-### 3. PyCharm Integration
-If you use PyCharm:
-- **One-Click Run:** In the top-right toolbar run configurations dropdown, select **"Verify Submission"** or **"Format Project"** and click the green **Play** button.
+Відповідь: `201 Created`, у тілі створений рецепт (як у `GET /api/recipes/{id}`).
 
-## Development only
+Помилки: `400`, якщо не вистачає обов'язкових полів або кухні чи автора з таким id не існує.
 
-The included settings use `DEBUG = True`, a development secret key, and a local
-SQLite database. The default mailer uses the console backend: email is printed
-to the process's console instead of being delivered.
+### Інші ендпоінти рецептів
 
-This configuration and Django's development server are not suitable for
-production deployment.
+| Що робить | Запит | Тіло запиту | Відповідь | Помилки |
+|---|---|---|---|---|
+| Змінити рецепт | `PATCH /api/recipes/{id}` | тільки поля, які треба змінити, наприклад `{"cooking_time": 80}` | `200`, оновлений рецепт | `400`, `404` |
+| Видалити рецепт | `DELETE /api/recipes/{id}` | немає | `204`, без тіла | `404` |
+
+## Кухні
+
+### Отримати список кухонь
+
+Використовується на сторінці кухонь і у фільтрі на головній.
+
+`GET /api/cuisines`
+
+Відповідь: `200 OK`
+
+```json
+[
+  {
+    "id": 1,
+    "name": "Українська",
+    "image": "https://example.com/ukrainian.jpg"
+  }
+]
+```
+
+### Отримати одну кухню
+
+`GET /api/cuisines/{id}`
+
+Відповідь: `200 OK`
+
+```json
+{
+  "id": 1,
+  "name": "Українська",
+  "description": "Борщ, вареники, голубці та інші страви",
+  "image": "https://example.com/ukrainian.jpg"
+}
+```
+
+Помилки: `404`.
+
+### Додати кухню
+
+`POST /api/cuisines`
+
+Тіло запиту:
+
+```json
+{
+  "name": "Українська",
+  "description": "Борщ, вареники, голубці та інші страви",
+  "image": "https://example.com/ukrainian.jpg"
+}
+```
+
+Відповідь: `201 Created`, у тілі створена кухня.
+
+Помилки: `400`, якщо немає назви або кухня з такою назвою вже є.
+
+### Інші ендпоінти кухонь
+
+| Що робить | Запит | Тіло запиту | Відповідь | Помилки |
+|---|---|---|---|---|
+| Рецепти кухні (на сторінці кухні) | `GET /api/cuisines/{id}/recipes` | немає | `200`, список рецептів як у `GET /api/recipes` | `404` |
+| Змінити кухню | `PATCH /api/cuisines/{id}` | тільки поля, які треба змінити | `200`, оновлена кухня | `400`, `404` |
+| Видалити кухню | `DELETE /api/cuisines/{id}` | немає | `204`, без тіла | `404` |
+
+> **TBD:** що робити з рецептами, якщо видалити їхню кухню. Не давати видаляти чи залишати рецепти без кухні?
+
+
+## Автори
+
+### Отримати список авторів
+
+`GET /api/authors`
+
+Відповідь: `200 OK`
+
+```json
+[
+  {
+    "id": 3,
+    "name": "Олена Коваль",
+    "photo": "https://example.com/olena.jpg"
+  }
+]
+```
+
+### Отримати одного автора
+
+`GET /api/authors/{id}`
+
+Відповідь: `200 OK`
+
+```json
+{
+  "id": 3,
+  "name": "Олена Коваль",
+  "bio": "Кулінарка, готує домашні українські страви",
+  "photo": "https://example.com/olena.jpg"
+}
+```
+
+Помилки: `404`.
+
+### Додати автора
+
+`POST /api/authors`
+
+Тіло запиту:
+
+```json
+{
+  "name": "Олена Коваль",
+  "bio": "Кулінарка, готує домашні українські страви",
+  "photo": "https://example.com/olena.jpg"
+}
+```
+
+Відповідь: `201 Created`, у тілі створений автор.
+
+Помилки: `400`, якщо немає імені.
+
+### Інші ендпоінти авторів
+
+| Що робить | Запит | Тіло запиту | Відповідь | Помилки |
+|---|---|---|---|---|
+| Рецепти автора (на сторінці автора) | `GET /api/authors/{id}/recipes` | немає | `200`, список рецептів як у `GET /api/recipes` | `404` |
+| Змінити автора | `PATCH /api/authors/{id}` | тільки поля, які треба змінити | `200`, оновлений автор | `400`, `404` |
+| Видалити автора | `DELETE /api/authors/{id}` | немає | `204`, без тіла | `404` |
+
+
+## Відгуки
+
+### Отримати відгуки до рецепта
+
+Використовується на сторінці рецепта.
+
+`GET /api/recipes/{id}/reviews`
+
+Відповідь: `200 OK`
+
+```json
+[
+  {
+    "id": 7,
+    "user": { "id": 12, "username": "maria_k" },
+    "rating": 5,
+    "text": "Вийшло дуже смачно!",
+    "created_at": "2026-10-12T10:00:00Z"
+  }
+]
+```
+
+Помилки: `404`, якщо рецепта не існує.
+
+### Залишити відгук
+
+Тільки для користувачів, які увійшли в систему.
+
+`POST /api/recipes/{id}/reviews`
+
+Тіло запиту:
+
+```json
+{
+  "rating": 5,
+  "text": "Вийшло дуже смачно!"
+}
+```
+
+Відповідь: `201 Created`, у тілі створений відгук.
+
+Помилки:
+- `400`, якщо оцінка не від 1 до 5 або користувач уже залишав відгук до цього рецепта
+- `401`, якщо користувач не увійшов
+- `404`, якщо рецепта не існує
+
+### Інші ендпоінти відгуків
+
+| Що робить | Запит | Тіло запиту | Відповідь | Помилки |
+|---|---|---|---|---|
+| Видалити свій відгук | `DELETE /api/reviews/{id}` | немає | `204`, без тіла | `401` не увійшов, `403` чужий відгук, `404` |
+
+
+## Користувачі
+
+### Реєстрація
+
+`POST /api/auth/register`
+
+Тіло запиту:
+
+```json
+{
+  "username": "maria_k",
+  "email": "maria@example.com",
+  "password": "********"
+}
+```
+
+Відповідь: `201 Created`
+
+```json
+{
+  "id": 12,
+  "username": "maria_k",
+  "email": "maria@example.com"
+}
+```
+
+Помилки: `400`, якщо не заповнені поля або такий email чи username уже зайнятий.
+
+### Вхід
+
+`POST /api/auth/login`
+
+Тіло запиту:
+
+```json
+{
+  "email": "maria@example.com",
+  "password": "********"
+}
+```
+
+Відповідь: `200 OK`
+
+> **TODO:** що саме повертати після входу, залежить від того, як буде зроблена авторизація.
+
+Помилки: `401`, якщо email або пароль неправильні.
+
+### Мій профіль
+
+`GET /api/users/me`
+
+Відповідь: `200 OK`
+
+```json
+{
+  "id": 12,
+  "username": "maria_k",
+  "email": "maria@example.com",
+  "first_name": "Марія",
+  "last_name": "Коваленко",
+  "avatar": "https://example.com/maria.jpg"
+}
+```
+
+Помилки: `401`.
+
+### Мої відгуки
+
+`GET /api/users/me/reviews`
+
+Відповідь: `200 OK`
+
+```json
+[
+  {
+    "id": 7,
+    "recipe": { "id": 1, "title": "Український борщ" },
+    "rating": 5,
+    "text": "Вийшло дуже смачно!",
+    "created_at": "2026-10-12T10:00:00Z"
+  }
+]
+```
+
+Помилки: `401`.
+
+### Інші ендпоінти користувача
+
+| Що робить | Запит | Тіло запиту | Відповідь | Помилки |
+|---|---|---|---|---|
+| Змінити дані про себе | `PATCH /api/users/me` | тільки поля, які треба змінити, наприклад `{"first_name": "Марія"}` | `200`, оновлений профіль | `400`, `401` |
+| Мої улюблені рецепти | `GET /api/users/me/favorites` | немає | `200`, список рецептів як у `GET /api/recipes` | `401` |
+| Додати рецепт в улюблені | `POST /api/users/me/favorites` | `{"recipe_id": 1}` | `201` | `400` вже в улюблених, `401`, `404` рецепта немає |
+| Прибрати рецепт з улюблених | `DELETE /api/users/me/favorites/{recipe_id}` | немає | `204`, без тіла | `401`, `404` рецепта немає в улюблених |
+
+
+## Схема бази даних
+
+![Схема бази даних](db-schema.png)
