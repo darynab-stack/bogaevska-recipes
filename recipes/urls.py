@@ -1,0 +1,9 @@
+from django.urls import path
+
+from . import views
+
+urlpatterns = [
+    path("cuisines/", views.CuisineListView.as_view()),
+    path("cuisines/<int:pk>/", views.CuisineDetailView.as_view()),
+    path("cuisines/<int:pk>/recipes/", views.CuisineRecipesView.as_view()),
+]
