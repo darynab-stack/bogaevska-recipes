@@ -45,17 +45,13 @@ class Recipe(models.Model):
     image = models.URLField(blank=True)
     meal_type = models.CharField(max_length=20, choices=MealType.choices)
     difficulty = models.CharField(max_length=10, choices=Difficulty.choices)
-    cooking_time = models.PositiveIntegerField(
-        validators=[MinValueValidator(1)]
-    )
+    cooking_time = models.PositiveIntegerField(validators=[MinValueValidator(1)])
     servings = models.PositiveIntegerField(validators=[MinValueValidator(1)])
     created_at = models.DateTimeField(auto_now_add=True)
     cuisine = models.ForeignKey(
         Cuisine, on_delete=models.PROTECT, related_name="recipes"
     )
-    author = models.ForeignKey(
-        Author, on_delete=models.PROTECT, related_name="recipes"
-    )
+    author = models.ForeignKey(Author, on_delete=models.PROTECT, related_name="recipes")
 
     class Meta:
         ordering = ["title"]
@@ -76,9 +72,7 @@ class Ingredient(models.Model):
 
 
 class Step(models.Model):
-    recipe = models.ForeignKey(
-        Recipe, on_delete=models.CASCADE, related_name="steps"
-    )
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, related_name="steps")
     number = models.PositiveIntegerField()
     text = models.TextField()
 
