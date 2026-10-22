@@ -4,6 +4,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from .exceptions import error_response
 from .models import Author, Cuisine, Recipe
 from .serializers import (
     AuthorSerializer,
@@ -51,14 +52,10 @@ class CuisineDetailView(APIView):
             cuisine.delete()
         except ProtectedError:
             count = cuisine.recipes.count()
-            return Response(
-                {
-                    "detail": (
-                        f"Неможливо видалити кухню, бо в ній є рецепти ({count}). "
-                        "Спершу видаліть їх або перенесіть в іншу кухню."
-                    )
-                },
-                status=status.HTTP_409_CONFLICT,
+            return error_response(
+                f"Неможливо видалити кухню, бо в ній є рецепти ({count}). "
+                "Спершу видаліть їх або перенесіть в іншу кухню.",
+                status.HTTP_409_CONFLICT,
             )
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -102,15 +99,11 @@ class AuthorDetailView(APIView):
             author.delete()
         except ProtectedError:
             count = author.recipes.count()
-            return Response(
-                {
-                    "detail": (
-                        f"Неможливо видалити автора, бо за ним закріплено "
-                        f"рецепти ({count}). Спершу видаліть їх або "
-                        "призначте їм іншого автора."
-                    )
-                },
-                status=status.HTTP_409_CONFLICT,
+            return error_response(
+                f"Неможливо видалити автора, бо за ним закріплено "
+                f"рецепти ({count}). Спершу видаліть їх або "
+                "призначте їм іншого автора.",
+                status.HTTP_409_CONFLICT,
             )
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -138,9 +131,9 @@ class RecipeListView(APIView):
         cuisine = params.get("cuisine")
         if cuisine:
             if not cuisine.isdigit():
-                return Response(
-                    {"detail": "Параметр cuisine має бути числом (id кухні)."},
-                    status=status.HTTP_400_BAD_REQUEST,
+                return error_response(
+                    "Параметр cuisine має бути числом (id кухні).",
+                    status.HTTP_400_BAD_REQUEST,
                 )
             recipes = recipes.filter(cuisine_id=cuisine)
 
@@ -155,22 +148,18 @@ class RecipeListView(APIView):
         max_time = params.get("max_time")
         if max_time:
             if not max_time.isdigit():
-                return Response(
-                    {"detail": "Параметр max_time має бути числом (хвилини)."},
-                    status=status.HTTP_400_BAD_REQUEST,
+                return error_response(
+                    "Параметр max_time має бути числом (хвилини).",
+                    status.HTTP_400_BAD_REQUEST,
                 )
             recipes = recipes.filter(cooking_time__lte=max_time)
 
         sort = params.get("sort")
         if sort:
             if sort not in SORT_OPTIONS:
-                return Response(
-                    {
-                        "detail": (
-                            "Невідоме сортування. Можна: " + ", ".join(SORT_OPTIONS)
-                        )
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
+                return error_response(
+                    "Невідоме сортування. Можна: " + ", ".join(SORT_OPTIONS),
+                    status.HTTP_400_BAD_REQUEST,
                 )
             recipes = recipes.order_by(SORT_OPTIONS[sort])
 
