@@ -1,0 +1,1341 @@
+{
+  "info": {
+    "name": "Рецептник API",
+    "description": "Усі ендпоінти бекенду сайту з рецептами. Запускайте папки по черзі: 1, 2, 3, 4.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Кухні",
+      "item": [
+        {
+          "name": "Створити кухню",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "if (pm.response.code === 201) {",
+                  "    pm.collectionVariables.set(\"cuisine_id\", pm.response.json().id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/cuisines/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "cuisines",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Італійська\",\n  \"description\": \"Паста, піца, різото\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Помилка: створити кухню без назви",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/cuisines/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "cuisines",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Без назви\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Помилка: кухня з такою назвою вже є",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/cuisines/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "cuisines",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Італійська\",\n  \"description\": \"Паста, піца, різото\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Список кухонь",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/cuisines/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "cuisines",
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Одна кухня",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/cuisines/{{cuisine_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "cuisines",
+                "{{cuisine_id}}",
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Помилка: кухні не існує",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 404\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/cuisines/99999/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "cuisines",
+                "99999",
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Змінити кухню",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/cuisines/{{cuisine_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "cuisines",
+                "{{cuisine_id}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Паста, піца, різото, тірамісу\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Автори",
+      "item": [
+        {
+          "name": "Створити автора",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "if (pm.response.code === 201) {",
+                  "    pm.collectionVariables.set(\"author_id\", pm.response.json().id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/authors/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "authors",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Марко Россі\",\n  \"bio\": \"Готує класичні італійські страви\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Помилка: створити автора без імені",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/authors/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "authors",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bio\": \"Без імені\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Список авторів",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/authors/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "authors",
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Один автор",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/authors/{{author_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "authors",
+                "{{author_id}}",
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Помилка: автора не існує",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 404\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/authors/99999/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "authors",
+                "99999",
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Змінити автора",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/authors/{{author_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "authors",
+                "{{author_id}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bio\": \"Шеф-кухар, готує класичні італійські страви\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Рецепти",
+      "item": [
+        {
+          "name": "Створити рецепт",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "if (pm.response.code === 201) {",
+                  "    pm.collectionVariables.set(\"recipe_id\", pm.response.json().id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/recipes/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "recipes",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Паста карбонара\",\n  \"description\": \"Паста з беконом, яйцем і пармезаном\",\n  \"cuisine\": \"{{cuisine_id}}\",\n  \"author\": \"{{author_id}}\",\n  \"meal_type\": \"main\",\n  \"difficulty\": \"easy\",\n  \"cooking_time\": 25,\n  \"servings\": 2,\n  \"ingredients\": [\n    {\n      \"name\": \"Спагеті\",\n      \"amount\": \"200 г\"\n    },\n    {\n      \"name\": \"Бекон\",\n      \"amount\": \"100 г\"\n    },\n    {\n      \"name\": \"Яйця\",\n      \"amount\": \"2 шт\"\n    }\n  ],\n  \"steps\": [\n    {\n      \"number\": 1,\n      \"text\": \"Відварити спагеті\"\n    },\n    {\n      \"number\": 2,\n      \"text\": \"Обсмажити бекон\"\n    },\n    {\n      \"number\": 3,\n      \"text\": \"Змішати з яйцем і сиром\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Помилка: рецепт без інгредієнтів",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/recipes/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "recipes",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Паста карбонара\",\n  \"description\": \"Паста з беконом, яйцем і пармезаном\",\n  \"cuisine\": \"{{cuisine_id}}\",\n  \"author\": \"{{author_id}}\",\n  \"meal_type\": \"main\",\n  \"difficulty\": \"easy\",\n  \"cooking_time\": 25,\n  \"servings\": 2,\n  \"ingredients\": [],\n  \"steps\": [\n    {\n      \"number\": 1,\n      \"text\": \"Відварити спагеті\"\n    },\n    {\n      \"number\": 2,\n      \"text\": \"Обсмажити бекон\"\n    },\n    {\n      \"number\": 3,\n      \"text\": \"Змішати з яйцем і сиром\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Помилка: неправильна складність",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/recipes/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "recipes",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Паста карбонара\",\n  \"description\": \"Паста з беконом, яйцем і пармезаном\",\n  \"cuisine\": \"{{cuisine_id}}\",\n  \"author\": \"{{author_id}}\",\n  \"meal_type\": \"main\",\n  \"difficulty\": \"super_hard\",\n  \"cooking_time\": 25,\n  \"servings\": 2,\n  \"ingredients\": [\n    {\n      \"name\": \"Спагеті\",\n      \"amount\": \"200 г\"\n    },\n    {\n      \"name\": \"Бекон\",\n      \"amount\": \"100 г\"\n    },\n    {\n      \"name\": \"Яйця\",\n      \"amount\": \"2 шт\"\n    }\n  ],\n  \"steps\": [\n    {\n      \"number\": 1,\n      \"text\": \"Відварити спагеті\"\n    },\n    {\n      \"number\": 2,\n      \"text\": \"Обсмажити бекон\"\n    },\n    {\n      \"number\": 3,\n      \"text\": \"Змішати з яйцем і сиром\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Помилка: кухні не існує",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/recipes/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "recipes",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Паста карбонара\",\n  \"description\": \"Паста з беконом, яйцем і пармезаном\",\n  \"cuisine\": 99999,\n  \"author\": \"{{author_id}}\",\n  \"meal_type\": \"main\",\n  \"difficulty\": \"easy\",\n  \"cooking_time\": 25,\n  \"servings\": 2,\n  \"ingredients\": [\n    {\n      \"name\": \"Спагеті\",\n      \"amount\": \"200 г\"\n    },\n    {\n      \"name\": \"Бекон\",\n      \"amount\": \"100 г\"\n    },\n    {\n      \"name\": \"Яйця\",\n      \"amount\": \"2 шт\"\n    }\n  ],\n  \"steps\": [\n    {\n      \"number\": 1,\n      \"text\": \"Відварити спагеті\"\n    },\n    {\n      \"number\": 2,\n      \"text\": \"Обсмажити бекон\"\n    },\n    {\n      \"number\": 3,\n      \"text\": \"Змішати з яйцем і сиром\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Список рецептів",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/recipes/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "recipes",
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Пошук за назвою",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/recipes/?search=карбонара",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "recipes",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "карбонара"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Пошук за інгредієнтом",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/recipes/?ingredient=бекон",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "recipes",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "ingredient",
+                  "value": "бекон"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Фільтри: кухня, тип страви, складність, час",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/recipes/?cuisine={{cuisine_id}}&meal_type=main&difficulty=easy&max_time=30",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "recipes",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "cuisine",
+                  "value": "{{cuisine_id}}"
+                },
+                {
+                  "key": "meal_type",
+                  "value": "main"
+                },
+                {
+                  "key": "difficulty",
+                  "value": "easy"
+                },
+                {
+                  "key": "max_time",
+                  "value": "30"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Сортування: спочатку найшвидші",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/recipes/?sort=time",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "recipes",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "sort",
+                  "value": "time"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Помилка: max_time не число",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/recipes/?max_time=abc",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "recipes",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "max_time",
+                  "value": "abc"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Помилка: невідоме сортування",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/recipes/?sort=rating",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "recipes",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "sort",
+                  "value": "rating"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Один рецепт",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/recipes/{{recipe_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "recipes",
+                "{{recipe_id}}",
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Помилка: рецепта не існує",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 404\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/recipes/99999/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "recipes",
+                "99999",
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Змінити рецепт",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/recipes/{{recipe_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "recipes",
+                "{{recipe_id}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cooking_time\": 20\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Рецепти кухні",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/cuisines/{{cuisine_id}}/recipes/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "cuisines",
+                "{{cuisine_id}}",
+                "recipes",
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Рецепти автора",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/authors/{{author_id}}/recipes/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "authors",
+                "{{author_id}}",
+                "recipes",
+                ""
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Видалення",
+      "item": [
+        {
+          "name": "Помилка: видалити кухню, в якій є рецепти",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 409\", function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/cuisines/{{cuisine_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "cuisines",
+                "{{cuisine_id}}",
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Помилка: видалити автора, за яким є рецепти",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 409\", function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/authors/{{author_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "authors",
+                "{{author_id}}",
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Видалити рецепт",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 204\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/recipes/{{recipe_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "recipes",
+                "{{recipe_id}}",
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Помилка: видалити рецепт ще раз",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 404\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/recipes/{{recipe_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "recipes",
+                "{{recipe_id}}",
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Видалити кухню",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 204\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/cuisines/{{cuisine_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "cuisines",
+                "{{cuisine_id}}",
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Видалити автора",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 204\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/authors/{{author_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "authors",
+                "{{author_id}}",
+                ""
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000/api"
+    },
+    {
+      "key": "cuisine_id",
+      "value": ""
+    },
+    {
+      "key": "author_id",
+      "value": ""
+    },
+    {
+      "key": "recipe_id",
+      "value": ""
+    }
+  ]
+}
