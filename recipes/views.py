@@ -4,8 +4,8 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Cuisine
-from .serializers import CuisineSerializer, RecipeListSerializer
+from .models import Author, Cuisine
+from .serializers import AuthorSerializer, CuisineSerializer, RecipeListSerializer
 
 
 class CuisineListView(APIView):
@@ -56,4 +56,56 @@ class CuisineRecipesView(APIView):
     def get(self, request, pk):
         cuisine = get_object_or_404(Cuisine, pk=pk)
         serializer = RecipeListSerializer(cuisine.recipes.all(), many=True)
+        return Response(serializer.data)
+
+
+class AuthorListView(APIView):
+    def get(self, request):
+        authors = Author.objects.all()
+        serializer = AuthorSerializer(authors, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = AuthorSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class AuthorDetailView(APIView):
+    def get(self, request, pk):
+        author = get_object_or_404(Author, pk=pk)
+        serializer = AuthorSerializer(author)
+        return Response(serializer.data)
+
+    def patch(self, request, pk):
+        author = get_object_or_404(Author, pk=pk)
+        serializer = AuthorSerializer(author, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+    def delete(self, request, pk):
+        author = get_object_or_404(Author, pk=pk)
+        try:
+            author.delete()
+        except ProtectedError:
+            count = author.recipes.count()
+            return Response(
+                {
+                    "detail": (
+                        f"Неможливо видалити автора, бо за ним закріплено "
+                        f"рецепти ({count}). Спершу видаліть їх або "
+                        "призначте їм іншого автора."
+                    )
+                },
+                status=status.HTTP_409_CONFLICT,
+            )
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class AuthorRecipesView(APIView):
+    def get(self, request, pk):
+        author = get_object_or_404(Author, pk=pk)
+        serializer = RecipeListSerializer(author.recipes.all(), many=True)
         return Response(serializer.data)
