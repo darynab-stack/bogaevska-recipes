@@ -4,8 +4,19 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Author, Cuisine
-from .serializers import AuthorSerializer, CuisineSerializer, RecipeListSerializer
+from .models import Author, Cuisine, Recipe
+from .serializers import (
+    AuthorSerializer,
+    CuisineSerializer,
+    RecipeListSerializer,
+    RecipeSerializer,
+)
+
+SORT_OPTIONS = {
+    "title": "title",
+    "time": "cooking_time",
+    "newest": "-created_at",
+}
 
 
 class CuisineListView(APIView):
@@ -109,3 +120,84 @@ class AuthorRecipesView(APIView):
         author = get_object_or_404(Author, pk=pk)
         serializer = RecipeListSerializer(author.recipes.all(), many=True)
         return Response(serializer.data)
+
+
+class RecipeListView(APIView):
+    def get(self, request):
+        recipes = Recipe.objects.all()
+        params = request.query_params
+
+        search = params.get("search")
+        if search:
+            recipes = recipes.filter(title__icontains=search)
+
+        ingredient = params.get("ingredient")
+        if ingredient:
+            recipes = recipes.filter(ingredients__name__icontains=ingredient).distinct()
+
+        cuisine = params.get("cuisine")
+        if cuisine:
+            if not cuisine.isdigit():
+                return Response(
+                    {"detail": "Параметр cuisine має бути числом (id кухні)."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            recipes = recipes.filter(cuisine_id=cuisine)
+
+        meal_type = params.get("meal_type")
+        if meal_type:
+            recipes = recipes.filter(meal_type=meal_type)
+
+        difficulty = params.get("difficulty")
+        if difficulty:
+            recipes = recipes.filter(difficulty=difficulty)
+
+        max_time = params.get("max_time")
+        if max_time:
+            if not max_time.isdigit():
+                return Response(
+                    {"detail": "Параметр max_time має бути числом (хвилини)."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            recipes = recipes.filter(cooking_time__lte=max_time)
+
+        sort = params.get("sort")
+        if sort:
+            if sort not in SORT_OPTIONS:
+                return Response(
+                    {
+                        "detail": (
+                            "Невідоме сортування. Можна: " + ", ".join(SORT_OPTIONS)
+                        )
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            recipes = recipes.order_by(SORT_OPTIONS[sort])
+
+        serializer = RecipeListSerializer(recipes, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = RecipeSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class RecipeDetailView(APIView):
+    def get(self, request, pk):
+        recipe = get_object_or_404(Recipe, pk=pk)
+        serializer = RecipeSerializer(recipe)
+        return Response(serializer.data)
+
+    def patch(self, request, pk):
+        recipe = get_object_or_404(Recipe, pk=pk)
+        serializer = RecipeSerializer(recipe, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+    def delete(self, request, pk):
+        recipe = get_object_or_404(Recipe, pk=pk)
+        recipe.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
