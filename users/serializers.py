@@ -23,9 +23,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def validate_email(self, value):
         if User.objects.filter(email__iexact=value).exists():
-            raise serializers.ValidationError(
-                "Користувач з таким email уже існує."
-            )
+            raise serializers.ValidationError("Користувач з таким email уже існує.")
         return value
 
     def validate(self, attrs):
@@ -49,3 +47,9 @@ class RegisterSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data.pop("password_confirm")
         return User.objects.create_user(**validated_data)
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "username", "first_name", "last_name", "email", "is_staff"]
