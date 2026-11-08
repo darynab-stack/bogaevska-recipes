@@ -1,11 +1,13 @@
 from django.db.models import ProtectedError
 from django.shortcuts import get_object_or_404
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .exceptions import error_response
 from .models import Author, Cuisine, Recipe
+from .permissions import IsAdminToDelete
 from .serializers import (
     AuthorSerializer,
     CuisineSerializer,
@@ -21,6 +23,8 @@ SORT_OPTIONS = {
 
 
 class CuisineListView(APIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
     def get(self, request):
         cuisines = Cuisine.objects.all()
         serializer = CuisineSerializer(cuisines, many=True)
@@ -34,6 +38,8 @@ class CuisineListView(APIView):
 
 
 class CuisineDetailView(APIView):
+    permission_classes = [IsAuthenticatedOrReadOnly, IsAdminToDelete]
+
     def get(self, request, pk):
         cuisine = get_object_or_404(Cuisine, pk=pk)
         serializer = CuisineSerializer(cuisine)
@@ -68,6 +74,8 @@ class CuisineRecipesView(APIView):
 
 
 class AuthorListView(APIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
     def get(self, request):
         authors = Author.objects.all()
         serializer = AuthorSerializer(authors, many=True)
@@ -81,6 +89,8 @@ class AuthorListView(APIView):
 
 
 class AuthorDetailView(APIView):
+    permission_classes = [IsAuthenticatedOrReadOnly, IsAdminToDelete]
+
     def get(self, request, pk):
         author = get_object_or_404(Author, pk=pk)
         serializer = AuthorSerializer(author)
@@ -116,6 +126,8 @@ class AuthorRecipesView(APIView):
 
 
 class RecipeListView(APIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
     def get(self, request):
         recipes = Recipe.objects.all()
         params = request.query_params
@@ -174,6 +186,8 @@ class RecipeListView(APIView):
 
 
 class RecipeDetailView(APIView):
+    permission_classes = [IsAuthenticatedOrReadOnly, IsAdminToDelete]
+
     def get(self, request, pk):
         recipe = get_object_or_404(Recipe, pk=pk)
         serializer = RecipeSerializer(recipe)
