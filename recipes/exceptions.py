@@ -1,5 +1,5 @@
 from django.http import Http404
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import NotAuthenticated, ValidationError
 from rest_framework.response import Response
 from rest_framework.views import exception_handler
 
@@ -20,6 +20,12 @@ def custom_exception_handler(exc, context):
         response.data = {
             "detail": "Дані не пройшли перевірку. Виправте поля з помилками.",
             "errors": response.data,
+        }
+    elif isinstance(exc, NotAuthenticated):
+        response.data = {
+            "detail": "Потрібно увійти в акаунт. Передайте access токен "
+            "у заголовку Authorization: Bearer <токен>.",
+            "errors": {},
         }
     elif isinstance(exc, Http404):
         response.data = {
