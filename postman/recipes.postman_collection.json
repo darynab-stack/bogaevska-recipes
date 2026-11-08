@@ -1,10 +1,630 @@
 {
   "info": {
     "name": "Рецептник API",
-    "description": "Усі ендпоінти бекенду сайту з рецептами. Запускайте папки по черзі: 1, 2, 3, 4.",
+    "description": "Усі ендпоінти бекенду сайту з рецептами. Перед запуском вкажіть у змінних колекції admin_username і admin_password свого суперкористувача (python manage.py createsuperuser). Папки запускайте по черзі, від 0 до 4.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
   "item": [
+    {
+      "name": "0. Користувачі",
+      "item": [
+        {
+          "name": "Зареєструватися",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"test_username\", \"user\" + Date.now());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/register/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "register",
+                ""
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{test_username}}\",\n  \"first_name\": \"Тестова\",\n  \"last_name\": \"Користувачка\",\n  \"email\": \"{{test_username}}@example.com\",\n  \"password\": \"{{test_password}}\",\n  \"password_confirm\": \"{{test_password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Помилка: порожні дані реєстрації",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/register/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "register",
+                ""
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Помилка: паролі не збігаються",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/register/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "register",
+                ""
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"other_user\",\n  \"first_name\": \"Тестова\",\n  \"last_name\": \"Користувачка\",\n  \"email\": \"other@example.com\",\n  \"password\": \"{{test_password}}\",\n  \"password_confirm\": \"Інший_пароль1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Помилка: простий пароль і поганий email",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/register/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "register",
+                ""
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"weak_user\",\n  \"first_name\": \"Тестова\",\n  \"last_name\": \"Користувачка\",\n  \"email\": \"not-an-email\",\n  \"password\": \"12345678\",\n  \"password_confirm\": \"12345678\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Помилка: такий username уже є",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/register/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "register",
+                ""
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{test_username}}\",\n  \"first_name\": \"Тестова\",\n  \"last_name\": \"Користувачка\",\n  \"email\": \"{{test_username}}@example.com\",\n  \"password\": \"{{test_password}}\",\n  \"password_confirm\": \"{{test_password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Увійти",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "if (pm.response.code === 200) {",
+                  "    pm.collectionVariables.set(\"access_token\", pm.response.json().access);",
+                  "    pm.collectionVariables.set(\"refresh_token\", pm.response.json().refresh);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login",
+                ""
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{test_username}}\",\n  \"password\": \"{{test_password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Помилка: неправильний пароль",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 401\", function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login",
+                ""
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{test_username}}\",\n  \"password\": \"wrong-password\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Оновити access токен",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "if (pm.response.code === 200) {",
+                  "    pm.collectionVariables.set(\"access_token\", pm.response.json().access);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/refresh/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "refresh",
+                ""
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh\": \"{{refresh_token}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Помилка: недійсний refresh токен",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 401\", function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/refresh/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "refresh",
+                ""
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh\": \"not-a-real-token\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Мій профіль",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users/me/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "me",
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Помилка: профіль без токена",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 401\", function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users/me/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "me",
+                ""
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "Помилка: профіль з недійсним токеном",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 401\", function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users/me/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "me",
+                ""
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "not-a-real-token",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Увійти як адміністратор",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "if (pm.response.code === 200) {",
+                  "    pm.collectionVariables.set(\"admin_access_token\", pm.response.json().access);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login",
+                ""
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{admin_username}}\",\n  \"password\": \"{{admin_password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
     {
       "name": "1. Кухні",
       "item": [
@@ -47,6 +667,53 @@
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Італійська\",\n  \"description\": \"Паста, піца, різото\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Помилка: створити кухню без токена",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 401\", function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/cuisines/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "cuisines",
+                ""
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Грузинська\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -144,7 +811,7 @@
           }
         },
         {
-          "name": "Список кухонь",
+          "name": "Список кухонь (без токена)",
           "event": [
             {
               "listen": "test",
@@ -170,11 +837,14 @@
                 "cuisines",
                 ""
               ]
+            },
+            "auth": {
+              "type": "noauth"
             }
           }
         },
         {
-          "name": "Одна кухня",
+          "name": "Одна кухня (без токена)",
           "event": [
             {
               "listen": "test",
@@ -201,6 +871,9 @@
                 "{{cuisine_id}}",
                 ""
               ]
+            },
+            "auth": {
+              "type": "noauth"
             }
           }
         },
@@ -232,6 +905,9 @@
                 "99999",
                 ""
               ]
+            },
+            "auth": {
+              "type": "noauth"
             }
           }
         },
@@ -272,6 +948,54 @@
             "body": {
               "mode": "raw",
               "raw": "{\n  \"description\": \"Паста, піца, різото, тірамісу\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Помилка: змінити кухню без токена",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 401\", function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/cuisines/{{cuisine_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "cuisines",
+                "{{cuisine_id}}",
+                ""
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Нове\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -377,7 +1101,7 @@
           }
         },
         {
-          "name": "Список авторів",
+          "name": "Список авторів (без токена)",
           "event": [
             {
               "listen": "test",
@@ -403,11 +1127,14 @@
                 "authors",
                 ""
               ]
+            },
+            "auth": {
+              "type": "noauth"
             }
           }
         },
         {
-          "name": "Один автор",
+          "name": "Один автор (без токена)",
           "event": [
             {
               "listen": "test",
@@ -434,6 +1161,9 @@
                 "{{author_id}}",
                 ""
               ]
+            },
+            "auth": {
+              "type": "noauth"
             }
           }
         },
@@ -465,6 +1195,9 @@
                 "99999",
                 ""
               ]
+            },
+            "auth": {
+              "type": "noauth"
             }
           }
         },
@@ -553,6 +1286,53 @@
                 "recipes",
                 ""
               ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Паста карбонара\",\n  \"description\": \"Паста з беконом, яйцем і пармезаном\",\n  \"cuisine\": \"{{cuisine_id}}\",\n  \"author\": \"{{author_id}}\",\n  \"meal_type\": \"main\",\n  \"difficulty\": \"easy\",\n  \"cooking_time\": 25,\n  \"servings\": 2,\n  \"ingredients\": [\n    {\n      \"name\": \"Спагеті\",\n      \"amount\": \"200 г\"\n    },\n    {\n      \"name\": \"Бекон\",\n      \"amount\": \"100 г\"\n    },\n    {\n      \"name\": \"Яйця\",\n      \"amount\": \"2 шт\"\n    }\n  ],\n  \"steps\": [\n    {\n      \"number\": 1,\n      \"text\": \"Відварити спагеті\"\n    },\n    {\n      \"number\": 2,\n      \"text\": \"Обсмажити бекон\"\n    },\n    {\n      \"number\": 3,\n      \"text\": \"Змішати з яйцем і сиром\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Помилка: створити рецепт без токена",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 401\", function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/recipes/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "recipes",
+                ""
+              ]
+            },
+            "auth": {
+              "type": "noauth"
             },
             "body": {
               "mode": "raw",
@@ -698,7 +1478,7 @@
           }
         },
         {
-          "name": "Список рецептів",
+          "name": "Список рецептів (без токена)",
           "event": [
             {
               "listen": "test",
@@ -724,6 +1504,9 @@
                 "recipes",
                 ""
               ]
+            },
+            "auth": {
+              "type": "noauth"
             }
           }
         },
@@ -760,6 +1543,9 @@
                   "value": "карбонара"
                 }
               ]
+            },
+            "auth": {
+              "type": "noauth"
             }
           }
         },
@@ -796,6 +1582,9 @@
                   "value": "бекон"
                 }
               ]
+            },
+            "auth": {
+              "type": "noauth"
             }
           }
         },
@@ -844,6 +1633,9 @@
                   "value": "30"
                 }
               ]
+            },
+            "auth": {
+              "type": "noauth"
             }
           }
         },
@@ -880,6 +1672,9 @@
                   "value": "time"
                 }
               ]
+            },
+            "auth": {
+              "type": "noauth"
             }
           }
         },
@@ -916,6 +1711,9 @@
                   "value": "abc"
                 }
               ]
+            },
+            "auth": {
+              "type": "noauth"
             }
           }
         },
@@ -952,11 +1750,14 @@
                   "value": "rating"
                 }
               ]
+            },
+            "auth": {
+              "type": "noauth"
             }
           }
         },
         {
-          "name": "Один рецепт",
+          "name": "Один рецепт (без токена)",
           "event": [
             {
               "listen": "test",
@@ -983,6 +1784,9 @@
                 "{{recipe_id}}",
                 ""
               ]
+            },
+            "auth": {
+              "type": "noauth"
             }
           }
         },
@@ -1014,6 +1818,9 @@
                 "99999",
                 ""
               ]
+            },
+            "auth": {
+              "type": "noauth"
             }
           }
         },
@@ -1091,6 +1898,9 @@
                 "recipes",
                 ""
               ]
+            },
+            "auth": {
+              "type": "noauth"
             }
           }
         },
@@ -1123,6 +1933,9 @@
                 "recipes",
                 ""
               ]
+            },
+            "auth": {
+              "type": "noauth"
             }
           }
         }
@@ -1131,6 +1944,71 @@
     {
       "name": "4. Видалення",
       "item": [
+        {
+          "name": "Помилка: видалити рецепт без токена",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 401\", function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/recipes/{{recipe_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "recipes",
+                "{{recipe_id}}",
+                ""
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "Помилка: видалити рецепт звичайним користувачем",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Статус 403\", function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/recipes/{{recipe_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "recipes",
+                "{{recipe_id}}",
+                ""
+              ]
+            }
+          }
+        },
         {
           "name": "Помилка: видалити кухню, в якій є рецепти",
           "event": [
@@ -1158,6 +2036,16 @@
                 "cuisines",
                 "{{cuisine_id}}",
                 ""
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_access_token}}",
+                  "type": "string"
+                }
               ]
             }
           }
@@ -1190,11 +2078,21 @@
                 "{{author_id}}",
                 ""
               ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_access_token}}",
+                  "type": "string"
+                }
+              ]
             }
           }
         },
         {
-          "name": "Видалити рецепт",
+          "name": "Видалити рецепт (адмін)",
           "event": [
             {
               "listen": "test",
@@ -1220,6 +2118,16 @@
                 "recipes",
                 "{{recipe_id}}",
                 ""
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_access_token}}",
+                  "type": "string"
+                }
               ]
             }
           }
@@ -1252,11 +2160,21 @@
                 "{{recipe_id}}",
                 ""
               ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_access_token}}",
+                  "type": "string"
+                }
+              ]
             }
           }
         },
         {
-          "name": "Видалити кухню",
+          "name": "Видалити кухню (адмін)",
           "event": [
             {
               "listen": "test",
@@ -1283,11 +2201,21 @@
                 "{{cuisine_id}}",
                 ""
               ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_access_token}}",
+                  "type": "string"
+                }
+              ]
             }
           }
         },
         {
-          "name": "Видалити автора",
+          "name": "Видалити автора (адмін)",
           "event": [
             {
               "listen": "test",
@@ -1314,6 +2242,16 @@
                 "{{author_id}}",
                 ""
               ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_access_token}}",
+                  "type": "string"
+                }
+              ]
             }
           }
         }
@@ -1324,6 +2262,34 @@
     {
       "key": "base_url",
       "value": "http://127.0.0.1:8000/api"
+    },
+    {
+      "key": "test_password",
+      "value": "Recepty2026!"
+    },
+    {
+      "key": "admin_username",
+      "value": "admin"
+    },
+    {
+      "key": "admin_password",
+      "value": ""
+    },
+    {
+      "key": "test_username",
+      "value": ""
+    },
+    {
+      "key": "access_token",
+      "value": ""
+    },
+    {
+      "key": "refresh_token",
+      "value": ""
+    },
+    {
+      "key": "admin_access_token",
+      "value": ""
     },
     {
       "key": "cuisine_id",
