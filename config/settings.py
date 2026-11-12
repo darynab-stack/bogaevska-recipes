@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "rest_framework_simplejwt",
+    "drf_spectacular",
     "corsheaders",
     "recipes",
     "users",
@@ -51,6 +52,7 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ],
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "EXCEPTION_HANDLER": "recipes.exceptions.custom_exception_handler",
 }
 
@@ -61,6 +63,17 @@ SIMPLE_JWT = {
     "REFRESH_TOKEN_LIFETIME": timedelta(
         days=config("REFRESH_TOKEN_LIFETIME_DAYS", default=1, cast=int)
     ),
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Рецептник API",
+    "DESCRIPTION": (
+        "API сайту з рецептами. Переглядати рецепти, кухні й авторів може "
+        "будь-хто. Для створення і зміни потрібен access токен у заголовку "
+        "Authorization: Bearer <токен>, а видаляти можуть лише адміністратори."
+    ),
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
 }
 
 CORS_ALLOWED_ORIGINS = config(
@@ -146,6 +159,45 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.1/howto/static-files/
 
 STATIC_URL = "static/"
+
+
+# Logging
+# https://docs.djangoproject.com/en/6.1/topics/logging/
+
+LOG_LEVEL = config("LOG_LEVEL", default="INFO")
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "simple": {
+            "format": "{asctime} {levelname} {name}: {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "simple",
+        },
+        "file": {
+            "class": "logging.FileHandler",
+            "filename": BASE_DIR / "app.log",
+            "formatter": "simple",
+            "encoding": "utf-8",
+        },
+    },
+    "loggers": {
+        "recipes": {
+            "handlers": ["console", "file"],
+            "level": LOG_LEVEL,
+        },
+        "users": {
+            "handlers": ["console", "file"],
+            "level": LOG_LEVEL,
+        },
+    },
+}
 
 
 # Email
