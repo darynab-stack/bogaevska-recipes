@@ -102,3 +102,8 @@ class RecipeSerializer(serializers.ModelSerializer):
             for item in steps_data:
                 Step.objects.create(recipe=instance, **item)
         return instance
+
+
+class ErrorSerializer(serializers.Serializer):
+    detail = serializers.CharField()
+    errors = serializers.DictField()
