@@ -3,3 +3,6 @@ Django>=6.1.1,<6.2
 sqlparse>=0.6.0,<0.7.0
 djangorestframework>=3.18.3,<3.19
 django-cors-headers>=4.9.0,<5.0
+djangorestframework-simplejwt>=5.5.1,<5.6
+drf-spectacular>=0.30.0,<0.31
+python-decouple>=3.8,<4.0
