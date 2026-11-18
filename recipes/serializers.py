@@ -1,3 +1,4 @@
+from django.db import transaction
 from rest_framework import serializers
 
 from .models import Author, Cuisine, Ingredient, Recipe, Step
@@ -68,13 +69,24 @@ class RecipeSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 "Рецепт має містити хоча б один інгредієнт."
             )
+        self.check_required_fields(IngredientSerializer, value)
         return value
 
     def validate_steps(self, value):
         if not value:
             raise serializers.ValidationError("Рецепт має містити хоча б один крок.")
+        self.check_required_fields(StepSerializer, value)
         return value
 
+    def check_required_fields(self, item_serializer, items):
+        # При PATCH (partial=True) DRF не перевіряє обов'язкові поля і
+        # у вкладених елементах. Але старий список повністю замінюється
+        # новим, тому кожен елемент перевіряємо ще раз як при створенні.
+        serializer = item_serializer(data=items, many=True)
+        if not serializer.is_valid():
+            raise serializers.ValidationError(serializer.errors)
+
+    @transaction.atomic
     def create(self, validated_data):
         ingredients_data = validated_data.pop("ingredients")
         steps_data = validated_data.pop("steps")
@@ -85,6 +97,7 @@ class RecipeSerializer(serializers.ModelSerializer):
             Step.objects.create(recipe=recipe, **item)
         return recipe
 
+    @transaction.atomic
     def update(self, instance, validated_data):
         ingredients_data = validated_data.pop("ingredients", None)
         steps_data = validated_data.pop("steps", None)
@@ -102,3 +115,8 @@ class RecipeSerializer(serializers.ModelSerializer):
             for item in steps_data:
                 Step.objects.create(recipe=instance, **item)
         return instance
+
+
+class ErrorSerializer(serializers.Serializer):
+    detail = serializers.CharField()
+    errors = serializers.DictField()

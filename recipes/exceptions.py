@@ -1,7 +1,11 @@
+import logging
+
 from django.http import Http404
 from rest_framework.exceptions import NotAuthenticated, ValidationError
 from rest_framework.response import Response
 from rest_framework.views import exception_handler
+
+logger = logging.getLogger(__name__)
 
 
 def error_response(detail, status_code, errors=None):
@@ -37,4 +41,16 @@ def custom_exception_handler(exc, context):
             "detail": response.data.get("detail", "Сталася помилка."),
             "errors": {},
         }
+
+    request = context["request"]
+    username = request.user.username or "гість"
+    error_fields = ", ".join(response.data["errors"]) or "-"
+    logger.warning(
+        "%s %s -> %s (користувач: %s, поля з помилками: %s)",
+        request.method,
+        request.path,
+        response.status_code,
+        username,
+        error_fields,
+    )
     return response

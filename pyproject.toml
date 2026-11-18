@@ -31,3 +31,15 @@ indent = 2
 format_css = true
 format_js = true
 ignore = "H006,H031"
+
+[tool.coverage.run]
+source = ["."]
+omit = [
+    ".venv/*",
+    "*/migrations/*",
+    "*/tests/*",
+    "manage.py",
+    "check_submission.py",
+    "config/asgi.py",
+    "config/wsgi.py",
+]
