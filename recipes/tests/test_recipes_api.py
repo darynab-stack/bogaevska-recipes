@@ -220,6 +220,24 @@ def test_update_replaces_ingredients(user_client, recipe):
     assert list(recipe.ingredients.values_list("name", flat=True)) == ["Квасоля"]
 
 
+@pytest.mark.parametrize(
+    "field, items, missing_field",
+    [
+        ("steps", [{"text": "Новий крок"}], "number"),
+        ("ingredients", [{"name": "Сіль"}], "amount"),
+    ],
+)
+def test_update_with_incomplete_items_keeps_old_items(
+    user_client, recipe, field, items, missing_field
+):
+    response = user_client.patch(detail_url(recipe.id), {field: items}, format="json")
+
+    assert response.status_code == 400
+    assert missing_field in response.data["errors"][field][0]
+    assert recipe.steps.count() == 2
+    assert recipe.ingredients.count() == 2
+
+
 def test_update_with_invalid_value_returns_400(user_client, recipe):
     response = user_client.patch(detail_url(recipe.id), {"servings": 0}, format="json")
 
